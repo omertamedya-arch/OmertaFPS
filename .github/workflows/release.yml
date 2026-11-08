@@ -11,6 +11,9 @@ permissions:
 jobs:
   release:
     runs-on: windows-latest
+    env:
+      # github.com release CDN'i 504 dondurdugunde indirmeyi surdurur; zip hash'i asagida resmi degerle dogrulanir.
+      ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
 
     steps:
       - name: Checkout
@@ -22,8 +25,34 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Cache Electron and builder tools
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.LOCALAPPDATA }}\electron\Cache
+            ${{ env.LOCALAPPDATA }}\electron-builder\Cache
+          key: electron-${{ hashFiles('package-lock.json') }}-builder-tools
+
       - name: Install dependencies
         run: npm ci
+
+      - name: Verify Electron binary hash
+        shell: pwsh
+        run: |
+          $expected = '489cd061908e697394b004298bf5ffd345c935d10e8ca197ba819f019ab2dec0'
+          $zips = @(Get-ChildItem "$env:LOCALAPPDATA\electron\Cache" -Recurse -Filter 'electron-v45.2.3-win32-x64.zip' -ErrorAction SilentlyContinue)
+          if ($zips.Count -eq 0) {
+            Write-Host 'Onbellekte Electron zip yok; build adiminda indirilecek.'
+            exit 0
+          }
+          foreach ($zip in $zips) {
+            $actual = (Get-FileHash $zip.FullName -Algorithm SHA256).Hash.ToLower()
+            if ($actual -ne $expected) {
+              Remove-Item $zip.FullName -Force
+              throw "Electron zip hash uyusmuyor: $actual"
+            }
+          }
+          Write-Host 'Electron zip resmi hash ile dogrulandi.'
 
       - name: Verify tag, version and publish target
         shell: pwsh
@@ -42,14 +71,6 @@ jobs:
 
       - name: Build renderer
         run: npm run build
-
-      - name: Cache Electron and builder tools
-        uses: actions/cache@v4
-        with:
-          path: |
-            ${{ env.LOCALAPPDATA }}\electron\Cache
-            ${{ env.LOCALAPPDATA }}\electron-builder\Cache
-          key: electron-${{ hashFiles('package-lock.json') }}-builder-tools
 
       - name: Package and publish to GitHub Releases
         env:
