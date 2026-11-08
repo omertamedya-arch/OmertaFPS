@@ -9,14 +9,15 @@ Bu proje artık iki aşamalı bir yayın akışına sahip:
 3. Kurulu cihazlar açılışta `electron-updater` ile `latest.yml` dosyasını okur, yeni sürümü
    arka planda indirir ve arayüzde yüzdeyi gösterir. "Yeniden başlat ve kur" ile güncellenir.
 
-## 0. Önce güvenlik: paylaşılan token
+## 0. Önce güvenlik
 
-Sohbet ortamında paylaşılan PAT (Personal Access Token) artık açık metin olarak görünür durumda.
-**Onu iptal et ve yeni bir token üret.** Yeni tokenı hiçbir dosyaya, workflow'a veya commit'e yazma;
-yalnızca GitHub Secrets içine ekle.
+Daha önce sohbet ortamında paylaşılan PAT (Personal Access Token) açık metin olarak görünmüş
+durumda. **Onu iptal et.** Yayın akışı artık kişisel token kullanmıyor; yeni bir token
+oluşturmana gerek yok.
 
-Ayrıca satıcıya ait `licenses.json` ve `lisans-kodlari.txt` dosyaları `.gitignore` içine eklendi.
-Bu iki dosya repoya **asla** girmemeli; uygulamaya yalnızca `licenses.hashes.json` gömülür.
+Satıcıya ait `licenses.json`, `lisans-kodlari.txt` ve `scripts/generate-keys.js` (2000 geçerli
+anahtar üreten satıcı aracı) `.gitignore` içinde. Bu dosyalar public repoya **asla** girmemeli;
+uygulamaya yalnızca `licenses.hashes.json` gömülür.
 
 ## 1. Yayın hedefini (owner/repo) kontrol et
 
@@ -37,58 +38,73 @@ Repo adın farklıysa `owner`/`repo` değerlerini güncelle. Workflow, değerler
 > Otomatik güncellemenin çalışması için repo **public** olmalıdır. Private repoda
 > `electron-updater` release dosyalarını okuyamaz; her istemciye token gömmek güvenli değildir.
 
-## 2. Yeni PAT oluştur
+## 2. Yetkilendirme: kişisel token gerekmiyor
 
-GitHub → **Settings → Developer settings → Personal access tokens → Fine-grained tokens**:
+Workflow, GitHub'ın kendi ürettiği `GITHUB_TOKEN`'ı kullanır:
 
-- Repository access: **Only select repositories** → bu repo
-- Permissions → **Contents: Read and write**
+```yaml
+permissions:
+  contents: write
 
-Klasik token kullanacaksan `repo` kapsamı yeterlidir.
-
-## 3. Tokenı GitHub Secrets'a ekle
-
-Repo sayfasında **Settings → Secrets and variables → Actions → New repository secret**:
-
-- Name: `GH_TOKEN`
-- Secret: yeni PAT
-
-Alternatif olarak GitHub CLI ile (token komut geçmişine yazılmasın diye sorulunca yapıştır):
-
-```powershell
-gh secret set GH_TOKEN
+# ...
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-Workflow bu secret'ı `GH_TOKEN` ortam değişkeni olarak `electron-builder`'a verir.
+Bu token her çalıştırmada otomatik oluşturulur, yalnızca o iş için geçerlidir ve silinmez.
+Repo **Settings → Secrets and variables → Actions** bölümüne elle bir secret eklemen
+gerekmez. `permissions: contents: write` satırı release oluşturup dosya yüklemek için yeterlidir.
 
-## 4. Projeyi GitHub'a pushla
+## 3. İndirme dayanıklılığı (504 hatası)
 
-Klasör henüz bir git deposu değil. İlk kez yayınlarken:
+GitHub'ın release/dosya CDN'i zaman zaman `504` döndürüyor. Workflow bu yüzden electron ve
+electron-builder araçlarını aynadan indirir, önbelleğe alır ve bütünlüğünü doğrular:
+
+```yaml
+env:
+  ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
+  ELECTRON_BUILDER_BINARIES_MIRROR: https://npmmirror.com/mirrors/electron-builder-binaries/
+```
+
+- `actions/cache@v4` Electron ve builder araçlarını önbellekte tutar; sonraki sürümlerde indirme
+  yapılmaz.
+- Electron zip'inin SHA-256 değeri resmi değerle karşılaştırılır, uyuşmazsa dosya silinip yayın
+  durdurulur.
+- electron-builder, kendi gömülü checksum'larıyla indirdiği tüm araçları doğrular.
+- Yayın adımı 3 kez denenir; her deneme arasında 20 saniye beklenir.
+
+> Aynalar yalnızca **indirme** içindir. Release'i her zaman bu reponun Actions akışı üretir;
+> dışarıdan gelen bir kurulum dosyası yüklenmez.
+
+## 4. Repo durumu ve push
+
+Depo kuruldu: `https://github.com/omertamedya-arch/OmertaFPS` (public).
+`origin/main` bu depoya bağlı, etiketler de push edildi. Her değişiklikten sonra:
 
 ```bash
-git init
-git add .
-git commit -m "Omerta FPS Pro ilk yayın"
-git branch -M main
-git remote add origin https://github.com/<kullanici>/<repo>.git
-git push -u origin main
+git status
+git add <degisen-dosyalar>
+git commit -m "kisa aciklama"
+git push origin main
 ```
 
-Push etmeden önce `git status` çıktısında `licenses.json` veya `lisans-kodlari.txt`
-görünmediğini kontrol et; görünüyorsa `git rm --cached` ile takipten çıkar.
+Push etmeden önce `git status` çıktısında `licenses.json`, `lisans-kodlari.txt` veya
+`scripts/generate-keys.js` görünmediğini kontrol et; görünüyorsa `git rm --cached` ile
+takipten çıkar.
 
 ## 5. Yeni sürüm yayınla
 
 Etiket, `package.json` sürümüyle birebir eşleşmelidir (workflow bunu doğrular):
 
 ```bash
-# 1.1.0 -> 1.1.1
+# 1.2.0 -> 1.2.1
 npm version patch --no-git-tag-version
 
 git add package.json package-lock.json
-git commit -m "v1.1.1"
-git tag v1.1.1
-git push origin main --tags
+git commit -m "v1.2.1"
+git tag v1.2.1
+git push origin main
+git push origin v1.2.1
 ```
 
 Etiket push edildiğinde workflow otomatik başlar. Birkaç dakika sonra repo'nun
