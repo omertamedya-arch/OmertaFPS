@@ -1,0 +1,82 @@
+{
+  "name": "omerta-fps-pro",
+  "productName": "Omerta FPS Pro",
+  "version": "1.2.0",
+  "description": "Omerta FPS Pro - Windows 10/11 e-spor ve oyun optimizasyonu",
+  "main": "electron/main.js",
+  "author": "Omerta FPS",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "electron .",
+    "preview": "vite preview",
+    "test": "node --test \"tests/*.test.js\"",
+    "keys": "node scripts/generate-keys.js",
+    "dist": "vite build && electron-builder --win --publish never",
+    "dist:publish": "vite build && electron-builder --win --publish always"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "4.3.4",
+    "autoprefixer": "10.4.20",
+    "electron": "45.2.3",
+    "electron-builder": "^26.18.0",
+    "postcss": "8.5.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "tailwindcss": "3.4.17",
+    "vite": "6.1.0"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.11"
+  },
+  "build": {
+    "appId": "com.omertafps.pro",
+    "productName": "Omerta FPS Pro",
+    "asar": true,
+    "directories": {
+      "output": "release/builder",
+      "buildResources": "assets"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "shared/**/*",
+      "assets/icon.png",
+      "assets/omerta.ico",
+      "licenses.hashes.json",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/omerta.ico",
+      "artifactName": "OmertaFPS-Setup-${version}.${ext}",
+      "requestedExecutionLevel": "requireAdministrator"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Omerta FPS Pro",
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "omertamedya-arch",
+      "repo": "OmertaFPS",
+      "releaseType": "release"
+    }
+  }
+}

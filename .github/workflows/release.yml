@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify tag, version and publish target
+        shell: pwsh
+        run: |
+          $pkg = Get-Content -Raw package.json | ConvertFrom-Json
+          $tag = "${{ github.ref_name }}"
+          if ("v$($pkg.version)" -ne $tag) {
+            throw "Etiket ($tag) package.json surumu (v$($pkg.version)) ile eslesmiyor. Once surumu artirin, sonra etiketleyin."
+          }
+          if ($pkg.build.publish.owner -eq 'YOUR_GITHUB_USERNAME' -or $pkg.build.publish.repo -eq 'YOUR_REPO_NAME') {
+            throw "package.json > build.publish icindeki owner/repo placeholder degerlerini gercek GitHub bilgileriyle degistirin."
+          }
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build renderer
+        run: npm run build
+
+      - name: Package and publish to GitHub Releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder --win --publish always

@@ -1,0 +1,12 @@
+node_modules/
+dist/
+release/
+.tools/
+*.log
+licenses.json
+lisans-kodlari.txt
+.env
+.env.*
+
+# satici araclari (public repoya girmez)
+scripts/generate-keys.js

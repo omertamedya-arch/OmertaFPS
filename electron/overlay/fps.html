@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'unsafe-inline'; script-src 'self'"
+    />
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: transparent;
+        user-select: none;
+        cursor: default;
+      }
+
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: 4px;
+        box-sizing: border-box;
+      }
+
+      #pill {
+        display: flex;
+        align-items: baseline;
+        gap: 5px;
+        padding: 3px 9px 4px;
+        border-radius: 8px;
+        background: rgba(4, 9, 14, 0.42);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        opacity: var(--opacity, 0.75);
+      }
+
+      #value {
+        font-size: var(--font-size, 13px);
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        color: var(--color, #9fe8c8);
+        font-variant-numeric: tabular-nums;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+      }
+
+      #unit {
+        font-size: 8px;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(214, 226, 240, 0.5);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="pill"><span id="value">--</span><span id="unit">FPS</span></div>
+    <script src="./fps.js"></script>
+  </body>
+</html>
