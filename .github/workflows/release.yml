@@ -12,8 +12,10 @@ jobs:
   release:
     runs-on: windows-latest
     env:
-      # github.com release CDN'i 504 dondurdugunde indirmeyi surdurur; zip hash'i asagida resmi degerle dogrulanir.
+      # github.com release CDN'i 504 dondurdugunde indirmeyi surdurur; indirilen dosyalar
+      # electron-builder'in gomulu checksum'lari ve asagidaki resmi Electron hash'i ile dogrulanir.
       ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
+      ELECTRON_BUILDER_BINARIES_MIRROR: https://npmmirror.com/mirrors/electron-builder-binaries/
 
     steps:
       - name: Checkout
