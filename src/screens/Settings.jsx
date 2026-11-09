@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api } from '../lib/api'
 import { cn, formatDate } from '../lib/format'
+import { THEMES } from '../lib/themes'
+import { useAppState } from '../state/AppState'
 import { useToast } from '../components/Toast'
 import { Icon } from '../components/Icons'
 import { Chip, EmptyState, PageHeader, SkeletonRows, Spinner, Toggle } from '../components/ui'
@@ -126,6 +128,7 @@ function Slider({ label, value, min, max, step = 1, suffix = '', onChange }) {
 
 export default function Settings({ boot, licensed, onNavigate }) {
   const toast = useToast()
+  const { theme, setTheme, scene, setScene } = useAppState()
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -491,6 +494,56 @@ export default function Settings({ boot, licensed, onNavigate }) {
                 </button>
               )}
             </div>
+          </div>
+        </Section>
+
+        <Section
+          icon="palette"
+          title="Görünüm"
+          description="Tema ve hareketli sahne tercihi. Seçim bu cihazda saklanır; sahne yalnızca arayüzde çalışır."
+          className="xl:col-span-2"
+          badge={<Chip tone={scene ? 'volt' : 'muted'}>{scene ? 'Sahne açık' : 'Sahne kapalı'}</Chip>}
+        >
+          <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+            {THEMES.map((item) => {
+              const active = theme === item.id
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setTheme(item.id)}
+                  aria-pressed={active}
+                  className={cn(
+                    'flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left transition',
+                    active
+                      ? 'border-ion/30 bg-ion/[0.07] text-white shadow-[inset_0_0_0_1px_rgba(59,167,255,0.12)]'
+                      : 'border-white/[0.05] bg-white/[0.02] text-slate-400 hover:border-white/15 hover:text-slate-200'
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="grid h-7 w-7 shrink-0 place-items-center overflow-hidden rounded-lg border border-white/10"
+                    style={{ background: item.swatch[0] }}
+                  >
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: item.swatch[1] }} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-[11.5px] font-medium">{item.label}</span>
+                    <span className="block truncate text-[9px] text-slate-500">{item.hint}</span>
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-white/[0.05] bg-ink-950/40 px-4 py-3.5">
+            <div>
+              <p className="text-[12px] font-medium text-slate-200">Hareketli tema sahnesi</p>
+              <p className="mt-0.5 text-[10px] text-slate-500">
+                Her tema kendi animasyonunu gösterir (drone, koi, anka kuşu, tilki…). Yavaş sistemlerde kapatabilirsin.
+              </p>
+            </div>
+            <Toggle checked={scene} onChange={setScene} label="Hareketli tema sahnesi" />
           </div>
         </Section>
 

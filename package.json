@@ -1,7 +1,7 @@
 {
   "name": "omerta-fps-pro",
   "productName": "Omerta FPS Pro",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "Omerta FPS Pro - Windows 10/11 e-spor ve oyun optimizasyonu",
   "main": "electron/main.js",
   "author": "Omerta FPS",

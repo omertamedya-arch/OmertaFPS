@@ -1,7 +1,7 @@
 'use strict';
 
 const path = require('node:path');
-const { app, BrowserWindow, Menu } = require('electron');
+const { app, BrowserWindow, Menu, session } = require('electron');
 const { registerIpc } = require('./ipc');
 const orchestrator = require('./lib/orchestrator');
 const overlay = require('./lib/overlay');
@@ -36,6 +36,9 @@ if (!gotLock) {
   });
 
   app.whenReady().then(() => {
+    session.defaultSession.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
+    session.defaultSession.setPermissionCheckHandler(() => false);
+
     orchestrator.init({
       send: (payload) => {
         if (mainWindow && !mainWindow.isDestroyed()) {
@@ -91,6 +94,7 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
+      devTools: !app.isPackaged,
       spellcheck: false
     }
   });
@@ -102,6 +106,9 @@ function createWindow() {
   });
 
   mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  mainWindow.webContents.on('will-attach-webview', (event) => {
+    event.preventDefault();
+  });
   mainWindow.webContents.on('will-navigate', (event) => {
     event.preventDefault();
   });

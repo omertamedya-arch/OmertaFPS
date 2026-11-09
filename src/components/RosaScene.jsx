@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { cn } from '../lib/format'
+import { useReducedMotion } from '../lib/motion'
 
 const PETAL_COLORS = [
   'linear-gradient(140deg, #fff1f7, #fbcfe8 55%, #f472b6)',
@@ -68,23 +69,6 @@ const POSE_CLASS = {
   jump: 'is-jumping',
   attack: 'is-attacking',
   idle: ''
-}
-
-function useReducedMotion() {
-  const [reduced, setReduced] = useState(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return false
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  })
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return undefined
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const handleChange = (event) => setReduced(event.matches)
-    query.addEventListener?.('change', handleChange)
-    return () => query.removeEventListener?.('change', handleChange)
-  }, [])
-
-  return reduced
 }
 
 function Samurai() {

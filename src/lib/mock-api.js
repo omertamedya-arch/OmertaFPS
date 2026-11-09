@@ -502,7 +502,7 @@ const emitProgress = (payload) => progressListeners.forEach((listener) => listen
 const emitScan = (payload) => scanListeners.forEach((listener) => listener(payload))
 const emitEsports = (payload) => esportsListeners.forEach((listener) => listener(payload))
 
-let updaterState = { state: 'idle', currentVersion: '1.2.0' }
+let updaterState = { state: 'idle', currentVersion: '1.3.0' }
 let updaterTimer = null
 const emitUpdater = (payload) => {
   updaterState = { ...updaterState, ...payload }
@@ -1099,7 +1099,7 @@ export function createMockApi() {
         product: 'Omerta FPS Pro',
         plan: licensed ? 'pro' : 'free',
         theme: null,
-        version: '1.2.0'
+        version: '1.3.0'
       }
     },
 
@@ -1973,7 +1973,7 @@ export function createMockApi() {
           displays: clone(MOCK_DISPLAYS),
           loginItem: settingsState.startWithWindows,
           dataDir: 'C:\\ProgramData\\OmertaFPS',
-          version: '1.2.0',
+          version: '1.3.0',
           platform: 'Windows_NT 10.0.19045'
         }
       },

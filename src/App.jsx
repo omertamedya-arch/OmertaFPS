@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ToastProvider } from './components/Toast'
 import UpdateBanner from './components/UpdateBanner'
-import RosaScene from './components/RosaScene'
+import ThemeScene from './components/ThemeScene'
 import { AppStateProvider, useAppState } from './state/AppState'
 import TopBar from './components/TopBar'
 import Sidebar from './components/Sidebar'
@@ -111,7 +111,7 @@ function MainShell({ boot, licensed, onUpgrade, onLogout }) {
 }
 
 function Shell() {
-  const { boot, error, theme, setTheme, refresh, paywall, openPaywall, logout } = useAppState()
+  const { boot, error, theme, setTheme, scene, refresh, paywall, openPaywall, logout } = useAppState()
 
   let content
   let contextLabel = 'Sistem Denetimi'
@@ -141,7 +141,7 @@ function Shell() {
   return (
     <div className="app-bg flex h-screen flex-col overflow-hidden">
       <div className="grid-overlay pointer-events-none fixed inset-0 z-0" />
-      {theme === 'rosa' && <RosaScene />}
+      {scene && <ThemeScene theme={theme} />}
       <TopBar
         contextLabel={contextLabel}
         admin={boot?.admin}

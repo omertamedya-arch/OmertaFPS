@@ -1,6 +1,13 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { api } from '../lib/api'
-import { THEME_STORAGE_KEY, applyTheme, normalizeTheme, readStoredTheme } from '../lib/themes'
+import {
+  THEME_STORAGE_KEY,
+  applyTheme,
+  normalizeTheme,
+  persistScene,
+  readStoredScene,
+  readStoredTheme
+} from '../lib/themes'
 
 const AppStateContext = createContext(null)
 
@@ -23,6 +30,7 @@ export function AppStateProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [theme, setTheme] = useState(readTheme)
+  const [scene, setSceneState] = useState(readStoredScene)
   const [paywall, setPaywall] = useState(null)
   const bootRef = useRef(null)
 
@@ -70,6 +78,10 @@ export function AppStateProvider({ children }) {
     setTheme(normalizeTheme(next))
   }, [])
 
+  const setScene = useCallback((next) => {
+    setSceneState(persistScene(next))
+  }, [])
+
   const openPaywall = useCallback((reason = {}) => {
     if (bootRef.current?.licensed) return
     setPaywall((current) => current || reason)
@@ -102,6 +114,8 @@ export function AppStateProvider({ children }) {
       refreshing,
       theme,
       setTheme: setThemeValue,
+      scene,
+      setScene,
       paywall,
       openPaywall,
       closePaywall,
@@ -109,7 +123,22 @@ export function AppStateProvider({ children }) {
       logout,
       refresh: () => load({ silent: Boolean(bootRef.current) })
     }),
-    [boot, error, loading, refreshing, theme, setThemeValue, paywall, openPaywall, closePaywall, activate, logout, load]
+    [
+      boot,
+      error,
+      loading,
+      refreshing,
+      theme,
+      setThemeValue,
+      scene,
+      setScene,
+      paywall,
+      openPaywall,
+      closePaywall,
+      activate,
+      logout,
+      load
+    ]
   )
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>

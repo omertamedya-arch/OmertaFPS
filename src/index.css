@@ -811,6 +811,759 @@
   }
 }
 
+/* ── Tema sahneleri: ortak katmanlar ────────────────────────────────── */
+
+.scene-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.scene-actor-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Karanlık: veri çizgileri ve gözcü drone */
+.dark-streak {
+  position: absolute;
+  left: -46%;
+  width: 46%;
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(125, 211, 252, 0.5), rgba(61, 245, 165, 0.22), transparent);
+  animation-name: streak-sweep;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+@keyframes streak-sweep {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  14% {
+    opacity: 0.85;
+  }
+  78% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate3d(148vw, 0, 0);
+    opacity: 0;
+  }
+}
+
+.drone-actor {
+  position: absolute;
+  right: 5%;
+  bottom: 10px;
+  width: 58px;
+  height: 45px;
+  opacity: 0.92;
+  filter: drop-shadow(0 10px 18px rgba(59, 130, 246, 0.22));
+  animation: drone-hover 6.5s ease-in-out infinite;
+}
+
+@keyframes drone-hover {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-2deg);
+  }
+  50% {
+    transform: translate3d(-9px, -8px, 0) rotate(2deg);
+  }
+}
+
+.drone-beam {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  animation: beam-flicker 4.2s ease-in-out infinite;
+}
+
+.drone-lens {
+  animation: lens-pulse 2.4s ease-in-out infinite;
+}
+
+.drone-light-a {
+  animation: light-blink 1.3s steps(2, end) infinite;
+}
+
+.drone-light-b {
+  animation: light-blink 1.9s steps(2, end) infinite;
+  animation-delay: -0.7s;
+}
+
+@keyframes beam-flicker {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  40% {
+    opacity: 0.95;
+  }
+  62% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes lens-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.45);
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+}
+
+@keyframes light-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0.15;
+  }
+}
+
+/* Aydınlık: bulut, toz ve kağıt uçak */
+.light-cloud {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.95), rgba(219, 232, 248, 0.35) 62%, transparent);
+  filter: blur(6px);
+  opacity: 0.5;
+  animation-name: cloud-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes cloud-drift {
+  0% {
+    transform: translate3d(-16vw, 0, 0);
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.5;
+  }
+  82% {
+    opacity: 0.45;
+  }
+  100% {
+    transform: translate3d(52vw, -14px, 0);
+    opacity: 0;
+  }
+}
+
+.light-dust {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(37, 99, 235, 0.28);
+  animation-name: dust-float;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes dust-float {
+  0%,
+  100% {
+    transform: translate3d(0, 8px, 0);
+    opacity: 0.15;
+  }
+  50% {
+    transform: translate3d(6px, -12px, 0);
+    opacity: 0.65;
+  }
+}
+
+.plane-actor {
+  position: absolute;
+  right: 6%;
+  bottom: 26px;
+  width: 62px;
+  height: 41px;
+  opacity: 0.92;
+  filter: drop-shadow(0 12px 18px rgba(37, 99, 235, 0.18));
+}
+
+.plane-bob {
+  animation: plane-float 7.5s ease-in-out infinite;
+}
+
+@keyframes plane-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-4deg);
+  }
+  35% {
+    transform: translate3d(-10px, -9px, 0) rotate(3deg);
+  }
+  70% {
+    transform: translate3d(4px, -4px, 0) rotate(-1deg);
+  }
+}
+
+/* Saydam: cam baloncuklar, kırağı ve kristal */
+.glass-bubble {
+  position: absolute;
+  bottom: -12%;
+  border-radius: 50%;
+  border: 1px solid rgba(224, 242, 254, 0.34);
+  background: radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.5), rgba(125, 211, 252, 0.08) 58%, transparent 74%);
+  box-shadow: inset 0 0 14px rgba(125, 211, 252, 0.16);
+  animation-name: bubble-rise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes bubble-rise {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.8);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(14px, -108vh, 0) scale(1.05);
+    opacity: 0;
+  }
+}
+
+.frost-spark {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  animation: frost-twinkle 4.6s ease-in-out infinite;
+}
+
+.frost-spark::before,
+.frost-spark::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border-radius: 2px;
+  background: rgba(224, 242, 254, 0.85);
+  transform: translate(-50%, -50%);
+}
+
+.frost-spark::before {
+  width: 11px;
+  height: 1px;
+}
+
+.frost-spark::after {
+  width: 1px;
+  height: 11px;
+}
+
+@keyframes frost-twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.7) rotate(0deg);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1) rotate(45deg);
+  }
+}
+
+.crystal-actor {
+  position: absolute;
+  right: 5%;
+  bottom: 12px;
+  width: 40px;
+  height: 54px;
+  opacity: 0.9;
+}
+
+.crystal-spin {
+  filter: drop-shadow(0 8px 16px rgba(94, 234, 212, 0.28));
+  animation: crystal-sway 9s ease-in-out infinite;
+  transform-origin: 50% 100%;
+}
+
+@keyframes crystal-sway {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-5deg);
+  }
+  50% {
+    transform: translateY(-9px) rotate(5deg);
+  }
+}
+
+/* Okyanus: baloncuk, dalga ve koi */
+.ocean-bubble {
+  position: absolute;
+  bottom: -8%;
+  border-radius: 50%;
+  border: 1px solid rgba(103, 232, 249, 0.35);
+  background: radial-gradient(circle at 34% 30%, rgba(207, 250, 254, 0.55), rgba(34, 211, 238, 0.1) 55%, transparent 72%);
+  animation-name: bubble-rise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+
+.ocean-wave {
+  position: absolute;
+  left: -22%;
+  width: 144%;
+  height: 120px;
+  border-radius: 50%;
+  border-top: 1px solid rgba(103, 232, 249, 0.22);
+  background: radial-gradient(ellipse at 50% 100%, rgba(34, 211, 238, 0.14), transparent 70%);
+  animation: wave-roll 13s ease-in-out infinite;
+}
+
+.ocean-wave-a {
+  bottom: -86px;
+}
+
+.ocean-wave-b {
+  bottom: -108px;
+  opacity: 0.55;
+  animation-delay: -6s;
+  animation-duration: 17s;
+}
+
+@keyframes wave-roll {
+  0%,
+  100% {
+    transform: translate3d(-3%, 0, 0) scaleY(1);
+  }
+  50% {
+    transform: translate3d(3%, -6px, 0) scaleY(1.07);
+  }
+}
+
+.koi-actor {
+  position: absolute;
+  right: 7%;
+  bottom: 8px;
+  width: 86px;
+  height: 43px;
+  opacity: 0.92;
+  filter: drop-shadow(0 10px 16px rgba(34, 211, 238, 0.2));
+}
+
+.koi-bob {
+  animation: koi-float 5.4s ease-in-out infinite;
+}
+
+@keyframes koi-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-3deg);
+  }
+  50% {
+    transform: translate3d(-8px, -6px, 0) rotate(3deg);
+  }
+}
+
+.koi-tail {
+  transform-box: fill-box;
+  transform-origin: 0% 50%;
+  animation: tail-swish 1.7s ease-in-out infinite;
+}
+
+@keyframes tail-swish {
+  0%,
+  100% {
+    transform: rotate(-9deg);
+  }
+  50% {
+    transform: rotate(9deg);
+  }
+}
+
+/* Gece yarısı: aurora, yıldız kayması ve ufo */
+.aurora-band {
+  position: absolute;
+  width: 72vw;
+  height: 34vh;
+  border-radius: 50%;
+  filter: blur(48px);
+  mix-blend-mode: screen;
+  opacity: 0.34;
+  animation: aurora-drift 19s ease-in-out infinite alternate;
+}
+
+.aurora-a {
+  top: -10%;
+  left: -14%;
+  background: linear-gradient(100deg, rgba(167, 139, 250, 0.9), rgba(99, 102, 241, 0.5), transparent 70%);
+}
+
+.aurora-b {
+  top: 2%;
+  right: -10%;
+  background: linear-gradient(100deg, rgba(244, 114, 182, 0.75), rgba(168, 85, 247, 0.45), transparent 70%);
+  animation-delay: -6s;
+}
+
+.aurora-c {
+  top: 26%;
+  left: 16%;
+  background: linear-gradient(100deg, rgba(56, 189, 248, 0.6), rgba(129, 140, 248, 0.4), transparent 70%);
+  animation-delay: -12s;
+  opacity: 0.24;
+}
+
+@keyframes aurora-drift {
+  0% {
+    transform: translate3d(-3%, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(4%, 6%, 0) scale(1.12);
+  }
+}
+
+.night-star {
+  position: absolute;
+  border-radius: 50%;
+  background: #e9d5ff;
+  box-shadow: 0 0 6px rgba(196, 181, 253, 0.85);
+  animation: star-twinkle 3.6s ease-in-out infinite;
+}
+
+@keyframes star-twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.15);
+  }
+}
+
+.shooting-star {
+  position: absolute;
+  width: 118px;
+  height: 1.5px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(233, 213, 255, 0.9));
+  opacity: 0;
+  animation-name: shooting-star;
+  animation-timing-function: ease-out;
+  animation-iteration-count: infinite;
+}
+
+.shooting-a {
+  top: 11%;
+  left: 16%;
+  animation-delay: 1.2s;
+  animation-duration: 9s;
+}
+
+.shooting-b {
+  top: 33%;
+  left: 48%;
+  animation-delay: 6.4s;
+  animation-duration: 13s;
+}
+
+@keyframes shooting-star {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(18deg) scaleX(0.2);
+  }
+  5% {
+    opacity: 0.9;
+  }
+  20% {
+    opacity: 0;
+    transform: translate3d(340px, 118px, 0) rotate(18deg) scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(340px, 118px, 0) rotate(18deg) scaleX(1);
+  }
+}
+
+.ufo-actor {
+  position: absolute;
+  right: 6%;
+  bottom: 16px;
+  width: 66px;
+  height: 46px;
+  opacity: 0.92;
+  filter: drop-shadow(0 10px 20px rgba(129, 140, 248, 0.28));
+  animation: ufo-hover 7s ease-in-out infinite;
+}
+
+@keyframes ufo-hover {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(-2deg);
+  }
+  50% {
+    transform: translate3d(-10px, -10px, 0) rotate(2deg);
+  }
+}
+
+.ufo-beam {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  animation: opacity-wave 3.4s ease-in-out infinite;
+}
+
+.ufo-lights {
+  animation: opacity-wave 1.9s ease-in-out infinite;
+}
+
+@keyframes opacity-wave {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Kor: ısı halesi, kıvılcım ve anka kuşu */
+.heat-glow {
+  position: absolute;
+  left: 50%;
+  bottom: -34%;
+  width: 96vw;
+  height: 64vh;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse at 50% 100%,
+    rgba(251, 146, 60, 0.22),
+    rgba(239, 68, 68, 0.09) 46%,
+    transparent 74%
+  );
+  animation: heat-breathe 9s ease-in-out infinite;
+}
+
+@keyframes heat-breathe {
+  0%,
+  100% {
+    opacity: 0.65;
+    transform: translateX(-50%) scaleY(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scaleY(1.08);
+  }
+}
+
+.ember {
+  position: absolute;
+  bottom: -6%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fde68a, #fb923c 55%, rgba(239, 68, 68, 0));
+  box-shadow: 0 0 10px rgba(251, 146, 60, 0.7);
+  animation-name: ember-rise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes ember-rise {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.7);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate3d(var(--ember-drift, 0px), -94vh, 0) scale(1.1);
+    opacity: 0;
+  }
+}
+
+.phoenix-actor {
+  position: absolute;
+  right: 5%;
+  bottom: 4px;
+  width: 96px;
+  height: 54px;
+  opacity: 0.88;
+  filter: drop-shadow(0 10px 20px rgba(251, 146, 60, 0.3));
+}
+
+.phoenix-wing {
+  transform-box: fill-box;
+  transform-origin: 100% 55%;
+  animation: wing-flap 3.8s ease-in-out infinite;
+}
+
+.phoenix-tail {
+  transform-box: fill-box;
+  transform-origin: 100% 0%;
+  animation: tail-flick 4.4s ease-in-out infinite;
+}
+
+@keyframes wing-flap {
+  0%,
+  100% {
+    transform: rotate(0deg) scaleY(1);
+  }
+  50% {
+    transform: rotate(-9deg) scaleY(1.08);
+  }
+}
+
+@keyframes tail-flick {
+  0%,
+  100% {
+    transform: rotate(0deg);
+    opacity: 0.85;
+  }
+  50% {
+    transform: rotate(-5deg);
+    opacity: 1;
+  }
+}
+
+/* Orman: sis, yaprak, ateş böceği ve tilki */
+.forest-fog {
+  position: absolute;
+  left: -24%;
+  bottom: -12%;
+  width: 148%;
+  height: 48%;
+  background: radial-gradient(ellipse at 50% 100%, rgba(52, 211, 153, 0.15), rgba(6, 17, 13, 0) 72%);
+  filter: blur(10px);
+  animation: fog-drift 24s ease-in-out infinite alternate;
+}
+
+@keyframes fog-drift {
+  0% {
+    transform: translate3d(-3%, 0, 0) scaleY(1);
+  }
+  100% {
+    transform: translate3d(3%, -8px, 0) scaleY(1.08);
+  }
+}
+
+.forest-leaf {
+  position: absolute;
+  top: -6%;
+  border-radius: 62% 22% 62% 22%;
+  background: linear-gradient(140deg, #bef264, #34d399);
+  opacity: 0;
+  animation-name: leaf-fall;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes leaf-fall {
+  0% {
+    transform: translate3d(0, -8vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate3d(var(--leaf-drift, 0px), 110vh, 0) rotate(320deg);
+    opacity: 0;
+  }
+}
+
+.firefly {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #d9f99d;
+  box-shadow: 0 0 8px 2px rgba(163, 230, 53, 0.55);
+  animation-name: firefly-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+@keyframes firefly-drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate3d(var(--fly-drift, 0px), -18px, 0);
+    opacity: 0.35;
+  }
+}
+
+.fox-actor {
+  position: absolute;
+  right: 5%;
+  bottom: 4px;
+  width: 90px;
+  height: 46px;
+  opacity: 0.94;
+  filter: drop-shadow(0 10px 16px rgba(52, 211, 153, 0.18));
+}
+
+.fox-bob {
+  animation: fox-breathe 4.8s ease-in-out infinite;
+  transform-origin: 50% 100%;
+}
+
+@keyframes fox-breathe {
+  0%,
+  100% {
+    transform: translateY(0) scaleY(1);
+  }
+  50% {
+    transform: translateY(-2px) scaleY(1.02);
+  }
+}
+
+.fox-tail {
+  transform-box: fill-box;
+  transform-origin: 100% 40%;
+  animation: tail-wag 3.6s ease-in-out infinite;
+}
+
+@keyframes tail-wag {
+  0%,
+  100% {
+    transform: rotate(-10deg);
+  }
+  50% {
+    transform: rotate(8deg);
+  }
+}
+
+@media (max-width: 760px) {
+  .scene-actor-layer {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -818,5 +1571,9 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .scene-actor-layer {
+    display: none;
   }
 }

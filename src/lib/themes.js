@@ -1,4 +1,5 @@
 export const THEME_STORAGE_KEY = 'omerta-theme'
+export const SCENE_STORAGE_KEY = 'omerta-scene'
 export const DEFAULT_THEME = 'dark'
 
 export const THEMES = [
@@ -33,4 +34,22 @@ export function applyTheme(value) {
   root.dataset.theme = meta.id
   root.dataset.surface = meta.surface
   return meta.id
+}
+
+export function readStoredScene() {
+  try {
+    return localStorage.getItem(SCENE_STORAGE_KEY) !== 'off'
+  } catch {
+    return true
+  }
+}
+
+export function persistScene(enabled) {
+  const next = enabled !== false
+  try {
+    localStorage.setItem(SCENE_STORAGE_KEY, next ? 'on' : 'off')
+  } catch {
+    /* storage may be unavailable in hardened contexts */
+  }
+  return next
 }
