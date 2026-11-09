@@ -889,6 +889,8 @@
 }
 
 .drone-lens {
+  transform-box: fill-box;
+  transform-origin: center;
   animation: lens-pulse 2.4s ease-in-out infinite;
 }
 
@@ -919,14 +921,10 @@
   100% {
     opacity: 0.5;
     transform: scale(1);
-    transform-box: fill-box;
-    transform-origin: center;
   }
   50% {
     opacity: 1;
     transform: scale(1.45);
-    transform-box: fill-box;
-    transform-origin: center;
   }
 }
 
