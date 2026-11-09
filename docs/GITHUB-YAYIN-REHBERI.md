@@ -72,6 +72,9 @@ env:
   durdurulur.
 - electron-builder, kendi gömülü checksum'larıyla indirdiği tüm araçları doğrular.
 - Yayın adımı 3 kez denenir; her deneme arasında 20 saniye beklenir.
+- Son adım (`Verify and complete release assets`) release'teki üç dosyayı listeler; eksik olanı
+  `gh release upload` ile tamamlar. GitHub kesintilerinde electron-builder büyük `.exe` dosyasını
+  yüklemeden başarılı dönebildiği için bu kontrol zorunlu.
 
 > Aynalar yalnızca **indirme** içindir. Release'i her zaman bu reponun Actions akışı üretir;
 > dışarıdan gelen bir kurulum dosyası yüklenmez.

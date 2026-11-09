@@ -86,3 +86,33 @@ jobs:
             Start-Sleep -Seconds 20
           }
           exit 1
+
+      # electron-builder buyuk dosyayi yuklerken adim basarili donup surec
+      # sonlanabiliyor; eksik dosyalari GitHub CLI (uploads API) ile tamamla.
+      - name: Verify and complete release assets
+        if: success()
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $version = (Get-Content -Raw package.json | ConvertFrom-Json).version
+          $tag = "v$version"
+          $names = @(
+            "OmertaFPS-Setup-$version.exe",
+            "latest.yml",
+            "OmertaFPS-Setup-$version.exe.blockmap"
+          )
+          for ($attempt = 1; $attempt -le 8; $attempt++) {
+            $published = @(gh release view $tag --json assets --jq '.assets[].name')
+            $missing = @($names | Where-Object { $published -notcontains $_ })
+            if ($missing.Count -eq 0) {
+              Write-Host "Tum yayin dosyalari hazir: $($names -join ', ')"
+              exit 0
+            }
+            Write-Host "Eksik dosyalar: $($missing -join ', ') (deneme $attempt)"
+            foreach ($file in $missing) {
+              gh release upload $tag "release/builder/$file" --clobber
+            }
+            Start-Sleep -Seconds 10
+          }
+          throw "Yayin dosyalari tamamlanamadi: $($missing -join ', ')"
