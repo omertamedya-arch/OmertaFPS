@@ -169,7 +169,6 @@ export default function RosaScene() {
   const [burst, setBurst] = useState(0)
 
   useEffect(() => {
-    if (reduced) return undefined
     let timers = []
     let loopTimer = 0
 
@@ -192,32 +191,65 @@ export default function RosaScene() {
       timers.forEach((timer) => window.clearTimeout(timer))
       window.clearTimeout(loopTimer)
     }
-  }, [reduced])
+  }, [])
 
-  if (reduced) {
-    return (
-      <div className="sakura-stage" aria-hidden="true">
-        {staticPetals.map((petal) => (
-          <span
-            key={petal.id}
-            className="sakura-petal"
-            style={{
-              left: `${petal.left}%`,
-              top: `${petal.top}%`,
-              width: petal.size,
-              height: petal.size * 0.88,
-              background: petal.color,
-              opacity: 0.7,
-              transform: `rotate(${petal.rotate}deg)`
-            }}
-          />
-        ))}
-        <div className="sakura-actor" data-pos="center">
-          <div className="samurai-sprite">
+  const stage = (
+    <div className="sakura-stage" aria-hidden="true">
+      <div className="sakura-actor" data-pos={state.pos} data-pace={state.pace}>
+        <div className={cn('samurai-flip', state.facing === 'left' && 'is-left')}>
+          <div className={cn('samurai-sprite', POSE_CLASS[state.pose])}>
             <Samurai />
+            <Slash />
           </div>
         </div>
       </div>
+
+      {state.enemy !== 'hidden' && (
+        <div className={cn('sakura-enemy', state.enemy === 'appear' ? 'is-visible' : 'is-hit')}>
+          <Enemy />
+        </div>
+      )}
+
+      {burst > 0 && (
+        <div key={burst} className="sakura-burst">
+          {SPARKS.map((spark, index) => (
+            <span
+              key={index}
+              className="sakura-spark"
+              style={{
+                '--dx': spark.dx,
+                '--dy': spark.dy,
+                '--spark-delay': spark.delay
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+
+  if (reduced) {
+    return (
+      <>
+        <div className="sakura-field" aria-hidden="true">
+          {staticPetals.map((petal) => (
+            <span
+              key={petal.id}
+              className="sakura-petal"
+              style={{
+                left: `${petal.left}%`,
+                top: `${petal.top}%`,
+                width: petal.size,
+                height: petal.size * 0.88,
+                background: petal.color,
+                opacity: 0.7,
+                transform: `rotate(${petal.rotate}deg)`
+              }}
+            />
+          ))}
+        </div>
+        {stage}
+      </>
     )
   }
 
@@ -243,38 +275,7 @@ export default function RosaScene() {
         ))}
       </div>
 
-      <div className="sakura-stage" aria-hidden="true">
-        <div className="sakura-actor" data-pos={state.pos} data-pace={state.pace}>
-          <div className={cn('samurai-flip', state.facing === 'left' && 'is-left')}>
-            <div className={cn('samurai-sprite', POSE_CLASS[state.pose])}>
-              <Samurai />
-              <Slash />
-            </div>
-          </div>
-        </div>
-
-        {state.enemy !== 'hidden' && (
-          <div className={cn('sakura-enemy', state.enemy === 'appear' ? 'is-visible' : 'is-hit')}>
-            <Enemy />
-          </div>
-        )}
-
-        {burst > 0 && (
-          <div key={burst} className="sakura-burst">
-            {SPARKS.map((spark, index) => (
-              <span
-                key={index}
-                className="sakura-spark"
-                style={{
-                  '--dx': spark.dx,
-                  '--dy': spark.dy,
-                  '--spark-delay': spark.delay
-                }}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+      {stage}
     </>
   )
 }

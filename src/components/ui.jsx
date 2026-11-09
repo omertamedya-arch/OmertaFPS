@@ -42,7 +42,7 @@ export function Toggle({ checked, onChange, disabled = false, busy = false, labe
     >
       <span
         className={cn(
-          'absolute top-[2px] h-[18px] w-[18px] rounded-full bg-[rgb(var(--c-knob))] shadow-sm transition-transform duration-200',
+          'absolute left-0 top-[2px] h-[18px] w-[18px] rounded-full bg-[rgb(var(--c-knob))] shadow-sm transition-transform duration-200',
           checked ? 'translate-x-[22px]' : 'translate-x-[3px]'
         )}
       />

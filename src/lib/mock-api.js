@@ -502,7 +502,7 @@ const emitProgress = (payload) => progressListeners.forEach((listener) => listen
 const emitScan = (payload) => scanListeners.forEach((listener) => listener(payload))
 const emitEsports = (payload) => esportsListeners.forEach((listener) => listener(payload))
 
-let updaterState = { state: 'idle', currentVersion: '1.3.0' }
+let updaterState = { state: 'idle', currentVersion: '1.3.1' }
 let updaterTimer = null
 const emitUpdater = (payload) => {
   updaterState = { ...updaterState, ...payload }
@@ -511,19 +511,19 @@ const emitUpdater = (payload) => {
 
 function runUpdaterDemo() {
   if (updaterTimer) return
-  emitUpdater({ state: 'available', version: '1.3.0', percent: 0 })
+  emitUpdater({ state: 'available', version: '1.3.1', percent: 0 })
   let percent = 0
   updaterTimer = setInterval(() => {
     percent = Math.min(100, percent + 8 + Math.round(Math.random() * 8))
     if (percent >= 100) {
       clearInterval(updaterTimer)
       updaterTimer = null
-      emitUpdater({ state: 'ready', version: '1.3.0', percent: 100, total: 142 * 1024 * 1024 })
+      emitUpdater({ state: 'ready', version: '1.3.1', percent: 100, total: 142 * 1024 * 1024 })
       return
     }
     emitUpdater({
       state: 'downloading',
-      version: '1.3.0',
+      version: '1.3.1',
       percent,
       total: 142 * 1024 * 1024,
       bytesPerSecond: 5.2 * 1024 * 1024
@@ -1099,7 +1099,7 @@ export function createMockApi() {
         product: 'Omerta FPS Pro',
         plan: licensed ? 'pro' : 'free',
         theme: null,
-        version: '1.3.0'
+        version: '1.3.1'
       }
     },
 
@@ -1973,7 +1973,7 @@ export function createMockApi() {
           displays: clone(MOCK_DISPLAYS),
           loginItem: settingsState.startWithWindows,
           dataDir: 'C:\\ProgramData\\OmertaFPS',
-          version: '1.3.0',
+          version: '1.3.1',
           platform: 'Windows_NT 10.0.19045'
         }
       },
