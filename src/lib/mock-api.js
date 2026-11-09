@@ -2083,6 +2083,11 @@ export function createMockApi() {
         return { ok: true, ...updaterState }
       },
       async check() {
+        if (['available', 'downloading', 'ready'].includes(updaterState.state)) {
+          return { ok: true, ...updaterState }
+        }
+        emitUpdater({ state: 'checking' })
+        await wait(700)
         runUpdaterDemo()
         return { ok: true, ...updaterState }
       },
@@ -2092,7 +2097,6 @@ export function createMockApi() {
       },
       onStatus(callback) {
         updaterListeners.add(callback)
-        setTimeout(runUpdaterDemo, 1200)
         return () => updaterListeners.delete(callback)
       }
     }

@@ -132,11 +132,33 @@ export default function Settings({ boot, licensed, onNavigate }) {
   const [saving, setSaving] = useState(null)
   const [restoreBusy, setRestoreBusy] = useState(false)
   const [clearing, setClearing] = useState(false)
+  const [update, setUpdate] = useState(null)
+  const [checkBusy, setCheckBusy] = useState(false)
+  const [installing, setInstalling] = useState(false)
   const overlayTimer = useRef(null)
   const overlayPending = useRef(null)
   const overlayQueue = useRef(Promise.resolve())
 
   useEffect(() => () => clearTimeout(overlayTimer.current), [])
+
+  useEffect(() => {
+    let active = true
+    api.updater
+      .status()
+      .then((result) => {
+        if (active && result?.state) setUpdate(result)
+      })
+      .catch(() => {})
+
+    const off = api.updater.onStatus((payload) => {
+      if (active) setUpdate(payload)
+    })
+
+    return () => {
+      active = false
+      if (typeof off === 'function') off()
+    }
+  }, [])
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -305,6 +327,51 @@ export default function Settings({ boot, licensed, onNavigate }) {
     }
   }
 
+  const updateBusy = checkBusy || ['checking', 'available', 'downloading'].includes(update?.state)
+
+  const checkLabel =
+    checkBusy || update?.state === 'checking'
+      ? 'Denetleniyor…'
+      : update?.state === 'available' || update?.state === 'downloading'
+        ? 'İndiriliyor…'
+        : 'Güncellemeyi denetle'
+
+  const checkUpdates = async () => {
+    if (updateBusy) return
+    setCheckBusy(true)
+    try {
+      const result = await api.updater.check()
+      const state = result?.state
+      if (state === 'disabled') {
+        toast.info('Güncelleme denetimi kapalı', 'Bu kontrol yalnızca kurulu sürümde çalışır.')
+      } else if (state === 'error') {
+        toast.error('Güncelleme denetlenemedi', result.message || 'İnternet bağlantısını kontrol et.')
+      } else if (state === 'idle') {
+        toast.success('Uygulama güncel', `v${result.currentVersion || boot?.version || '—'} en son sürüm.`)
+      } else if (state === 'available' || state === 'downloading') {
+        toast.info('Yeni sürüm bulundu', `v${result.version} arka planda indiriliyor.`)
+      } else if (state === 'ready') {
+        toast.success('Güncelleme hazır', `v${result.version} indirildi. Kurmak için yeniden başlat.`)
+      }
+    } catch (cause) {
+      toast.error('Güncelleme denetlenemedi', cause.message)
+    } finally {
+      setCheckBusy(false)
+    }
+  }
+
+  const installUpdate = async () => {
+    if (installing) return
+    setInstalling(true)
+    try {
+      const result = await api.updater.install()
+      if (!result?.installing) setInstalling(false)
+    } catch (cause) {
+      setInstalling(false)
+      toast.error('Kurulum başlatılamadı', cause.message)
+    }
+  }
+
   if (loading && !data) {
     return (
       <>
@@ -332,6 +399,42 @@ export default function Settings({ boot, licensed, onNavigate }) {
   const lastRestore = data?.restorePoint?.last
   const presetLabel = PRESET_OPTIONS.find((item) => item.id === auto.presetId)?.label || 'Otomatik algıla'
 
+  const currentVersion = boot?.version || update?.currentVersion || data?.version || '—'
+  const updatePercent = Math.max(0, Math.min(100, Number(update?.percent) || 0))
+  const updateReady = update?.state === 'ready'
+
+  const updateBadge =
+    update?.state === 'ready'
+      ? { tone: 'volt', label: 'Kuruluma hazır' }
+      : update?.state === 'available' || update?.state === 'downloading'
+        ? { tone: 'ion', label: 'İndiriliyor' }
+        : update?.state === 'checking'
+          ? { tone: 'ion', label: 'Denetleniyor' }
+          : update?.state === 'error'
+            ? { tone: 'amber', label: 'Denetlenemedi' }
+            : update?.state === 'disabled'
+              ? { tone: 'muted', label: 'Önizleme' }
+              : update?.checkedAt
+                ? { tone: 'volt', label: 'Güncel' }
+                : { tone: 'muted', label: 'Otomatik' }
+
+  const updateStatus =
+    update?.state === 'disabled'
+      ? 'Güncelleme denetimi kurulu sürümde çalışır; bu önizlemede kapalı.'
+      : update?.state === 'checking'
+        ? 'Sunucu kontrol ediliyor…'
+        : update?.state === 'available'
+          ? `v${update.version} bulundu, indirme hazırlanıyor…`
+          : update?.state === 'downloading'
+            ? `v${update.version} indiriliyor · %${updatePercent.toFixed(0)}`
+            : update?.state === 'ready'
+              ? `v${update.version} indirildi. Kurmak için uygulamayı yeniden başlat.`
+              : update?.state === 'error'
+                ? update.message || 'Sunucuya ulaşılamadı.'
+                : update?.checkedAt
+                  ? 'En son sürümü kullanıyorsun.'
+                  : 'Uygulama her açılışta sessizce kontrol eder; istersen hemen denetleyebilirsin.'
+
   return (
     <>
       <PageHeader
@@ -346,6 +449,51 @@ export default function Settings({ boot, licensed, onNavigate }) {
       />
 
       <div className="grid gap-4 xl:grid-cols-2">
+        <Section
+          icon="refresh"
+          title="Güncellemeler"
+          description="Yeni sürüm gelmiş mi diye hemen denetle. İndirme arka planda yapılır, oyun açıkken de devam eder."
+          tone="volt"
+          className="xl:col-span-2"
+          badge={<Chip tone={updateBadge.tone}>{updateBadge.label}</Chip>}
+        >
+          <div className="flex flex-col gap-3 rounded-xl border border-white/[0.05] bg-ink-950/40 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0 flex-1">
+              <p className="flex flex-wrap items-center gap-2 text-[12px] font-medium text-slate-200">
+                Kurulu sürüm <span className="font-mono text-slate-400">v{currentVersion}</span>
+                {update?.checkedAt && (
+                  <span className="font-mono text-[9px] text-slate-600">
+                    son kontrol {new Date(update.checkedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                )}
+              </p>
+              <p className="mt-0.5 text-[10px] leading-relaxed text-slate-500">{updateStatus}</p>
+
+              {(update?.state === 'available' || update?.state === 'downloading') && (
+                <div className="mt-2 h-1.5 max-w-md overflow-hidden rounded-full bg-white/[0.06]">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-ion to-volt transition-[width] duration-300"
+                    style={{ width: `${update.state === 'available' ? 8 : updatePercent}%` }}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="flex shrink-0 flex-wrap gap-2">
+              <button type="button" onClick={checkUpdates} disabled={updateBusy} className="btn-ghost">
+                {updateBusy ? <Spinner className="h-4 w-4" /> : <Icon name="refresh" className="h-4 w-4" />}
+                {checkLabel}
+              </button>
+              {updateReady && (
+                <button type="button" onClick={installUpdate} disabled={installing} className="btn-volt">
+                  {installing ? <Spinner className="h-4 w-4" /> : <Icon name="power" className="h-4 w-4" />}
+                  {installing ? 'Kuruluyor…' : 'Yeniden başlat ve kur'}
+                </button>
+              )}
+            </div>
+          </div>
+        </Section>
+
         <Section
           icon="power"
           title="Başlangıç"
@@ -706,7 +854,8 @@ export default function Settings({ boot, licensed, onNavigate }) {
 
       <p className="mt-4 flex items-center justify-center gap-1.5 text-[9.5px] text-slate-600">
         <Icon name="info" className="h-3 w-3" />
-        Kod imzalama sertifikası ve otomatik güncelleme sunucusu olmadan bu sürümde yayın imzası ve güncelleme dağıtımı yapılmaz.
+        Kurulum dosyası kod imzalı değil; ilk kurulumda Windows SmartScreen uyarı gösterebilir. Güncellemeler arka
+        planda indirilir ve uygulama yeniden başlatıldığında kurulur.
       </p>
     </>
   )

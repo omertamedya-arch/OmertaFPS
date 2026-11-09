@@ -4,11 +4,20 @@ const { app } = require('electron');
 
 const STARTUP_DELAY = 6000;
 
+function describeError(error) {
+  const raw = String(error?.message || '');
+  if (/50[234]|ETIMEDOUT|ENOTFOUND|ECONNRESET|ECONNREFUSED|net::/i.test(raw)) {
+    return 'Sunucuya ulaşılamadı. Bağlantını kontrol edip birkaç dakika sonra tekrar dene.';
+  }
+  return raw.slice(0, 240) || 'Güncelleme denetlenemedi.';
+}
+
 let updater = null;
 let sendStatus = () => {};
 let prepareInstall = async () => {};
 let initialized = false;
 let ready = false;
+let checking = false;
 let lastStatus = { state: 'idle', currentVersion: null };
 
 function publish(patch) {
@@ -44,13 +53,14 @@ function bindEvents() {
       state: 'available',
       version: info?.version || null,
       releaseDate: info?.releaseDate || null,
-      percent: 0
+      percent: 0,
+      checkedAt: Date.now()
     });
   });
 
   instance.on('update-not-available', () => {
     ready = false;
-    publish({ state: 'idle', percent: 0 });
+    publish({ state: 'idle', version: null, percent: 0, checkedAt: Date.now() });
   });
 
   instance.on('download-progress', (progress) => {
@@ -72,7 +82,8 @@ function bindEvents() {
     ready = false;
     publish({
       state: 'error',
-      message: String(error?.message || 'Güncelleme denetlenemedi.').slice(0, 240)
+      message: describeError(error),
+      checkedAt: Date.now()
     });
   });
 }
@@ -104,13 +115,21 @@ async function check() {
   if (!app.isPackaged) {
     return { state: 'disabled', currentVersion: app.getVersion() };
   }
+  if (checking || ready || ['available', 'downloading'].includes(lastStatus.state)) {
+    return { ...lastStatus };
+  }
+  checking = true;
+  publish({ state: 'checking' });
   try {
     await loadUpdater().checkForUpdates();
   } catch (error) {
     publish({
       state: 'error',
-      message: String(error?.message || 'Güncelleme denetlenemedi.').slice(0, 240)
+      message: describeError(error),
+      checkedAt: Date.now()
     });
+  } finally {
+    checking = false;
   }
   return { ...lastStatus };
 }
